@@ -11,11 +11,30 @@ import java.util.List;
 public class Customer extends Person {
     private List<Product> expectedPurchaseList;
     private List<Product> purchaseList;
+    private Seller sellerForSearch;
 
     public Customer(List<Product> expectedPurchaseList, int cash) {
         this.purchaseList = new ArrayList<>();
         this.expectedPurchaseList = expectedPurchaseList;
         this.setCash(cash);
+    }
+
+    @Override
+    public String toString() {
+        return "Customer{" +
+                "expectedPurchaseList=" + expectedPurchaseList +
+                ", purchaseList=" + purchaseList +
+//                ", sellerForSearch=" + sellerForSearch +
+                ", cash=" + getCash() +
+                '}';
+    }
+
+    public Seller getSellerForSearch() {
+        return sellerForSearch;
+    }
+
+    public void setSellerForSearch(Seller sellerForSearch) {
+        this.sellerForSearch = sellerForSearch;
     }
 
     public void addPurchase(Product product) {
@@ -28,12 +47,31 @@ public class Customer extends Person {
 
     public void findProductOnMarket(Market market) {
         for (Product product : getExpectedPurchaseList()) {
+
+            boolean isBought = false;
+
             for (Seller seller : market.getSellers()) {
-                boolean isBought = seller.sellProducts(this, product);
-                if (isBought) {
-                    break;
+                //Поиск нужного продавца
+                if (seller.equals(this.getSellerForSearch())) {
+                    //пробуем купить
+                    isBought = seller.sellProducts(this, product);
+                    if (isBought) {
+                        System.out.printf("Купили у искомого продавца: %s, %s\n", product.toString(), seller.toString());
+                        break;
+                    }
                 }
             }
+
+            if(!isBought){
+                for (Seller seller : market.getSellers()) {
+                    isBought = seller.sellProducts(this, product);
+                    if (isBought) {
+                        System.out.printf("Купили у другого продавца: %s, %s\n", product.toString(), seller.toString());
+                        break;
+                    }
+                }
+            }
+
         }
     }
 
@@ -42,7 +80,7 @@ public class Customer extends Person {
         if (purchaseList.size() == 0) {
             result.append("ничего");
         } else {
-            for(Product product: purchaseList) {
+            for (Product product : purchaseList) {
                 result.append(product.getName());
                 result.append(" в количестве ");
                 result.append(product.getQuantity());

@@ -25,8 +25,10 @@ public class Main {
         market.addSeller(secondSeller);
 
         Customer customer = createFirstCustomer();
+        customer.setSellerForSearch(new Seller("Алексей", "Ушаков"));
         customer.findProductOnMarket(market);
         customer.info();
+
     }
 
     private static Customer createFirstCustomer() {
@@ -76,14 +78,14 @@ public class Main {
         firstProduct.setPrice(8);
         firstProduct.setQuantity(40);
 
-        Product secondProduct = new Product();
-        secondProduct.setName(MarketConstants.CUCUMBER_PRODUCT_NAME);
-        secondProduct.setPrice(5);
-        secondProduct.setQuantity(12);
+//        Product secondProduct = new Product();
+//        secondProduct.setName(MarketConstants.CUCUMBER_PRODUCT_NAME);
+//        secondProduct.setPrice(5);
+//        secondProduct.setQuantity(12);
 
         List<Product> products = new ArrayList<>();
         products.add(firstProduct);
-        products.add(secondProduct);
+//        products.add(secondProduct);
         seller.setProducts(products);
 
         return seller;
