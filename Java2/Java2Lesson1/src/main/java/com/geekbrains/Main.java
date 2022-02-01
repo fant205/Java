@@ -16,6 +16,7 @@ public class Main {
     //4) Поиск товара про продавцу и продукту, либо по продукту
 
     public static void main(String[] args) {
+
         Market market = new Market();
 
         Seller firstSeller = createFirstSeller();
