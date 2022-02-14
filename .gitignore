@@ -24,6 +24,3 @@ backup-pom.xml
 #IntelliJ specific
 .idea/*
 *.iml
-/Java2/Java2Lesson5/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
-/Java2/Java2Lesson5/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst
-/Java2/Java2Lesson5/target/maven-archiver/pom.properties
