@@ -3,3 +3,6 @@
 
 #IntelliJ specific
 **/.idea
+
+#specific file types
+*.iml
