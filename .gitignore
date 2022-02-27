@@ -6,3 +6,5 @@
 
 #specific file types
 *.iml
+
+**/.mvn
