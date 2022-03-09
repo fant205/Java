@@ -70,6 +70,8 @@ public class ClientHandler {
             System.out.println("от " + nickName + ": " + messageInChat);
             if (messageInChat.equals(ServerCommandConstants.SHUTDOWN)) {
                 return;
+            } else if(messageInChat.startsWith(ServerCommandConstants.CHANGE_NICKNAME)){
+                nickName = server.changeNickname(nickName, messageInChat);
             }
 
             server.broadcastMessage(nickName, messageInChat);

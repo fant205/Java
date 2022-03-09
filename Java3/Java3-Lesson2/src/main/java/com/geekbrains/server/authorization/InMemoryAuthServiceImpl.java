@@ -35,6 +35,11 @@ public class InMemoryAuthServiceImpl implements AuthService {
     }
 
     @Override
+    public void changeNickname(String oldNickName, String newNickname) {
+        throw new RuntimeException("Does not support this method!");
+    }
+
+    @Override
     public void end() {
         System.out.println("Сервис аутентификации отключен");
     }
