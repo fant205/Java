@@ -12,12 +12,13 @@
     <artifactId>Java3</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>Java3Lesson2</module>
+        <module>Java3-Lesson2</module>
     </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
+
 
 </project>

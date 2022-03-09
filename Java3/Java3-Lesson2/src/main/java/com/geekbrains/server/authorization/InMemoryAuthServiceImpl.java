@@ -1,6 +1,8 @@
 package com.geekbrains.server.authorization;
 
+import java.sql.DriverManager;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class InMemoryAuthServiceImpl implements AuthService {
@@ -11,6 +13,9 @@ public class InMemoryAuthServiceImpl implements AuthService {
         users.put("login1", new UserData("login1", "password1", "first_user"));
         users.put("login2", new UserData("login2", "password2", "second_user"));
         users.put("login3", new UserData("login3", "password3", "third_user"));
+
+
+
     }
 
     @Override
