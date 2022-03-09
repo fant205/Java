@@ -2,13 +2,16 @@ package com.geekbrains.server;
 
 import com.geekbrains.CommonConstants;
 import com.geekbrains.server.authorization.AuthService;
-import com.geekbrains.server.authorization.InMemoryAuthServiceImpl;
+import com.geekbrains.server.authorization.DataBaseAuthServiceImpl;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.geekbrains.server.ServerCommandConstants.*;
 
 public class Server {
     private final AuthService authService;
@@ -16,7 +19,8 @@ public class Server {
     private List<ClientHandler> connectedUsers;
 
     public Server() {
-        authService = new InMemoryAuthServiceImpl();
+//        authService = new InMemoryAuthServiceImpl();
+        authService = new DataBaseAuthServiceImpl();
         try (ServerSocket server = new ServerSocket(CommonConstants.SERVER_PORT)) {
             authService.start();
             connectedUsers = new ArrayList<>();
@@ -53,7 +57,7 @@ public class Server {
     public synchronized void broadcastMessage(String fromNickName, String message) {
 
         //Логика отправка сообщения конкретному пользователю
-        if (message.startsWith(ServerCommandConstants.PERSONAL_MESSAGE)) {
+        if (message.startsWith(PERSONAL_MESSAGE)) {
 
             message = message.replaceAll("/w", "").trim();
             String targetNickName = message.substring(0, message.indexOf(" ")).trim();
@@ -81,4 +85,22 @@ public class Server {
         connectedUsers.remove(handler);
     }
 
+    public String changeNickname(String oldNickName, String messageInChat) {
+
+        try {
+            authService.start();
+            String newNickname = messageInChat.replaceAll(CHANGE_NICKNAME, "").trim();
+            authService.changeNickname(oldNickName, newNickname);
+
+            for (ClientHandler handler : connectedUsers) {
+                handler.sendMessage(String.format("Пользователь %s сменил nickname на %s", oldNickName, newNickname));
+            }
+
+            return newNickname;
+        } finally {
+            if (authService != null) {
+                authService.end();
+            }
+        }
+    }
 }
