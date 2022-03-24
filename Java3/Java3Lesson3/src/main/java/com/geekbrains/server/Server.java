@@ -3,6 +3,8 @@ package com.geekbrains.server;
 import com.geekbrains.CommonConstants;
 import com.geekbrains.server.authorization.AuthService;
 import com.geekbrains.server.authorization.DataBaseAuthServiceImpl;
+import com.geekbrains.server.history.HistoryService;
+import com.geekbrains.server.history.HistoryServiceImpl;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -15,13 +17,16 @@ import static com.geekbrains.server.ServerCommandConstants.*;
 public class Server {
     private final AuthService authService;
 
+    private final HistoryService historyService;
+
     private List<ClientHandler> connectedUsers;
 
     public Server() {
-//        authService = new InMemoryAuthServiceImpl();
         authService = new DataBaseAuthServiceImpl();
+        historyService = new HistoryServiceImpl();
         try (ServerSocket server = new ServerSocket(CommonConstants.SERVER_PORT)) {
             authService.start();
+            historyService.start();
             connectedUsers = new ArrayList<>();
             while (true) {
                 System.out.println("Сервер ожидает подключения");
@@ -35,6 +40,9 @@ public class Server {
         } finally {
             if (authService != null) {
                 authService.end();
+            }
+            if (historyService != null) {
+                historyService.end();
             }
         }
     }
@@ -101,5 +109,9 @@ public class Server {
                 authService.end();
             }
         }
+    }
+
+    public HistoryService getHistoryService() {
+        return historyService;
     }
 }

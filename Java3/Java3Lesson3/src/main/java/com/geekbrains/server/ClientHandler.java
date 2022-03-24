@@ -1,8 +1,6 @@
 package com.geekbrains.server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 
 public class ClientHandler {
@@ -10,6 +8,7 @@ public class ClientHandler {
     private final Socket socket;
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
+    private FileWriter fileWriter;
 
     private String nickName;
 
@@ -23,6 +22,7 @@ public class ClientHandler {
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
+            initializeHistoryFile();
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -32,6 +32,7 @@ public class ClientHandler {
                     } catch (IOException exception) {
                         exception.printStackTrace();
                     } finally {
+                        closeHistoryFile();
                         closeConnection();
                     }
                 }
@@ -52,6 +53,7 @@ public class ClientHandler {
                         sendMessage("/authok " + nickName);
                         this.nickName = nickName;
                         server.broadcastMessage(nickName, " зашел в чат");
+                        sendMessage(server.getHistoryService().getAllMessages());
                         server.addConnectedUser(this);
                         return;
                     } else {
@@ -64,17 +66,37 @@ public class ClientHandler {
         }
     }
 
+    private void initializeHistoryFile() throws IOException {
+        File history = new File("Java3/Java3Lesson3/chatHistory.txt");
+        if (!history.exists()) {
+            history.createNewFile();
+        }
+        fileWriter = new FileWriter(history);
+    }
+
+    private void closeHistoryFile() {
+        try {
+            fileWriter.close();
+            System.out.println("Файл закрыт!");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void readMessages() throws IOException {
         while (true) {
             String messageInChat = inputStream.readUTF();
             System.out.println("от " + nickName + ": " + messageInChat);
             if (messageInChat.equals(ServerCommandConstants.SHUTDOWN)) {
+                System.out.println("Команда отключения от " + nickName);
+                server.getHistoryService().end();
                 return;
-            } else if(messageInChat.startsWith(ServerCommandConstants.CHANGE_NICKNAME)){
+            } else if (messageInChat.startsWith(ServerCommandConstants.CHANGE_NICKNAME)) {
                 nickName = server.changeNickname(nickName, messageInChat);
             }
 
             server.broadcastMessage(nickName, messageInChat);
+            server.getHistoryService().addMessage(nickName + ": " + messageInChat);
 
         }
     }
