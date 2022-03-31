@@ -1,15 +1,16 @@
 package com.geekbrains.server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientHandler {
     private final Server server;
     private final Socket socket;
     private final DataInputStream inputStream;
     private final DataOutputStream outputStream;
+    private FileWriter fileWriter;
 
     private String nickName;
 
@@ -17,25 +18,41 @@ public class ClientHandler {
         return nickName;
     }
 
-    public ClientHandler(Server server, Socket socket) {
+    public ClientHandler(Server server, Socket socket, ExecutorService executorService) {
         try {
             this.server = server;
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        authentication();
-                        readMessages();
-                    } catch (IOException exception) {
-                        exception.printStackTrace();
-                    } finally {
-                        closeConnection();
-                    }
+            initializeHistoryFile();
+
+            executorService.execute(() -> {
+                try {
+                    authentication();
+                    readMessages();
+                } catch (IOException exception) {
+                    exception.printStackTrace();
+                } finally {
+                    closeHistoryFile();
+                    closeConnection();
                 }
-            }).start();
+            });
+
+
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        authentication();
+//                        readMessages();
+//                    } catch (IOException exception) {
+//                        exception.printStackTrace();
+//                    } finally {
+//                        closeHistoryFile();
+//                        closeConnection();
+//                    }
+//                }
+//            }).start();
         } catch (IOException exception) {
             throw new RuntimeException("Проблемы при создании обработчика");
         }
@@ -52,6 +69,7 @@ public class ClientHandler {
                         sendMessage("/authok " + nickName);
                         this.nickName = nickName;
                         server.broadcastMessage(nickName, " зашел в чат");
+                        sendMessage(server.getHistoryService().getAllMessages());
                         server.addConnectedUser(this);
                         return;
                     } else {
@@ -64,17 +82,37 @@ public class ClientHandler {
         }
     }
 
+    private void initializeHistoryFile() throws IOException {
+        File history = new File("Java3/Java3Lesson3/chatHistory.txt");
+        if (!history.exists()) {
+            history.createNewFile();
+        }
+        fileWriter = new FileWriter(history);
+    }
+
+    private void closeHistoryFile() {
+        try {
+            fileWriter.close();
+            System.out.println("Файл закрыт!");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void readMessages() throws IOException {
         while (true) {
             String messageInChat = inputStream.readUTF();
             System.out.println("от " + nickName + ": " + messageInChat);
             if (messageInChat.equals(ServerCommandConstants.SHUTDOWN)) {
+                System.out.println("Команда отключения от " + nickName);
+                server.getHistoryService().end();
                 return;
-            } else if(messageInChat.startsWith(ServerCommandConstants.CHANGE_NICKNAME)){
+            } else if (messageInChat.startsWith(ServerCommandConstants.CHANGE_NICKNAME)) {
                 nickName = server.changeNickname(nickName, messageInChat);
             }
 
             server.broadcastMessage(nickName, messageInChat);
+            server.getHistoryService().addMessage(nickName + ": " + messageInChat);
 
         }
     }
