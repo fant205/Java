@@ -11,6 +11,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.geekbrains.server.ServerCommandConstants.*;
 
@@ -21,9 +23,13 @@ public class Server {
 
     private List<ClientHandler> connectedUsers;
 
+    private ExecutorService executorService;
+
     public Server() {
         authService = new DataBaseAuthServiceImpl();
         historyService = new HistoryServiceImpl();
+        executorService = Executors.newCachedThreadPool();
+
         try (ServerSocket server = new ServerSocket(CommonConstants.SERVER_PORT)) {
             authService.start();
             historyService.start();
@@ -32,12 +38,14 @@ public class Server {
                 System.out.println("Сервер ожидает подключения");
                 Socket socket = server.accept();
                 System.out.println("Клиент подключился");
-                new ClientHandler(this, socket);
+                new ClientHandler(this, socket, executorService);
             }
         } catch (IOException exception) {
             System.out.println("Ошибка в работе сервера");
             exception.printStackTrace();
         } finally {
+            executorService.shutdown();
+
             if (authService != null) {
                 authService.end();
             }

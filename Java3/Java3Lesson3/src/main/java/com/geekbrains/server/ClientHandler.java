@@ -2,6 +2,8 @@ package com.geekbrains.server;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientHandler {
     private final Server server;
@@ -16,27 +18,41 @@ public class ClientHandler {
         return nickName;
     }
 
-    public ClientHandler(Server server, Socket socket) {
+    public ClientHandler(Server server, Socket socket, ExecutorService executorService) {
         try {
             this.server = server;
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
             initializeHistoryFile();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        authentication();
-                        readMessages();
-                    } catch (IOException exception) {
-                        exception.printStackTrace();
-                    } finally {
-                        closeHistoryFile();
-                        closeConnection();
-                    }
+
+            executorService.execute(() -> {
+                try {
+                    authentication();
+                    readMessages();
+                } catch (IOException exception) {
+                    exception.printStackTrace();
+                } finally {
+                    closeHistoryFile();
+                    closeConnection();
                 }
-            }).start();
+            });
+
+
+//            new Thread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        authentication();
+//                        readMessages();
+//                    } catch (IOException exception) {
+//                        exception.printStackTrace();
+//                    } finally {
+//                        closeHistoryFile();
+//                        closeConnection();
+//                    }
+//                }
+//            }).start();
         } catch (IOException exception) {
             throw new RuntimeException("Проблемы при создании обработчика");
         }
