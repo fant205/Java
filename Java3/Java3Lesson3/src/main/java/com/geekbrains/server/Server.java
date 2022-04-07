@@ -5,6 +5,8 @@ import com.geekbrains.server.authorization.AuthService;
 import com.geekbrains.server.authorization.DataBaseAuthServiceImpl;
 import com.geekbrains.server.history.HistoryService;
 import com.geekbrains.server.history.HistoryServiceImpl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -17,6 +19,8 @@ import java.util.concurrent.Executors;
 import static com.geekbrains.server.ServerCommandConstants.*;
 
 public class Server {
+
+    private static final Logger LOGGER = LogManager.getLogger(Server.class);
     private final AuthService authService;
 
     private final HistoryService historyService;
@@ -35,13 +39,13 @@ public class Server {
             historyService.start();
             connectedUsers = new ArrayList<>();
             while (true) {
-                System.out.println("Сервер ожидает подключения");
+                LOGGER.debug("Сервер ожидает подключения");
                 Socket socket = server.accept();
-                System.out.println("Клиент подключился");
+                LOGGER.debug("Клиент подключился");
                 new ClientHandler(this, socket, executorService);
             }
         } catch (IOException exception) {
-            System.out.println("Ошибка в работе сервера");
+            LOGGER.error("Ошибка в работе сервера");
             exception.printStackTrace();
         } finally {
             executorService.shutdown();

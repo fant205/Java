@@ -1,11 +1,16 @@
 package com.geekbrains.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ClientHandler {
+
+    private static final Logger LOGGER = LogManager.getLogger(ClientHandler.class);
     private final Server server;
     private final Socket socket;
     private final DataInputStream inputStream;
@@ -102,7 +107,7 @@ public class ClientHandler {
     private void readMessages() throws IOException {
         while (true) {
             String messageInChat = inputStream.readUTF();
-            System.out.println("от " + nickName + ": " + messageInChat);
+            LOGGER.debug("от " + nickName + ": " + messageInChat);
             if (messageInChat.equals(ServerCommandConstants.SHUTDOWN)) {
                 System.out.println("Команда отключения от " + nickName);
                 server.getHistoryService().end();
