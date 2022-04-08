@@ -15,6 +15,7 @@
         <module>Java3-Lesson2</module>
         <module>Java3Lesson3</module>
         <module>Java3Lesson5</module>
+        <module>Java3Lesson7</module>
     </modules>
 
     <properties>
