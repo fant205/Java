@@ -1,0 +1,10 @@
+/authok second_user
+first_user: hihi
+first_user: привет
+first_user: как дела?
+first_user: я тут
+first_user: кто?
+
+second_user: hi
+second_user: и я тут
+second_user: круто
